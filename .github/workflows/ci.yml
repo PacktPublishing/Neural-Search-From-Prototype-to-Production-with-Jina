@@ -17,4 +17,3 @@ jobs:
       - name: Run all test cases
         run: |
           pytest -s -v tests
-      - run: echo "🍏 This job's status is ${{ job.status }}."
