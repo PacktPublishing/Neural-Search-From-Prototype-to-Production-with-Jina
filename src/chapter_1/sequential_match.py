@@ -3,6 +3,7 @@ import glob
 
 
 def match_sequentially():
+    """This function """
     query = 'hello jina'
     matches = []
     dir_path = os.path.dirname(os.path.realpath(__file__))
