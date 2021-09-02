@@ -1,12 +1,12 @@
 import os
 import glob
 
+dir_path = os.path.dirname(os.path.realpath(__file__))
+
 
 def match_sequentially():
-    """This function """
-    query = 'hello jina'
     matches = []
-    dir_path = os.path.dirname(os.path.realpath(__file__))
+    query = 'hello jina'
     txt_files = glob.glob(f'{dir_path}/resources/*.txt')
     for txt_file in txt_files:
         with open(txt_file, 'r') as f:
