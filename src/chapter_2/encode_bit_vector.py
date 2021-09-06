@@ -12,10 +12,10 @@ def tokenize_and_stem(doc1, doc2):
 
 
 def encode(vocab, doc):
-    encoded = [0] * len(vocab)  #
+    encoded = [0] * len(vocab)
     for idx, token in enumerate(vocab):
         if token in doc:
-            encoded[idx] = 1  # present
+            encoded[idx] = 1  # if present set value to 1.
     return encoded
 
 
