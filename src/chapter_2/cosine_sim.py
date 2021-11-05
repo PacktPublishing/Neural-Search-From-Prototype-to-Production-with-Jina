@@ -1,5 +1,6 @@
 import math
-from src.chapter_2.encode_bit_vector import doc1, doc2, tokenize_and_stem, encode
+
+from encode_bit_vector import doc1, doc2, tokenize_and_stem, encode
 
 
 def compute_cosine_sim(encoded_doc1, encoded_doc2):
