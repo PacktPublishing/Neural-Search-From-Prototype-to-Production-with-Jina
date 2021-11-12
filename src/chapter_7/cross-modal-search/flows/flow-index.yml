@@ -1,0 +1,40 @@
+jtype: Flow                                       # We configure the index flow here that is used for indexing images and captions
+version: '1'                                      # yml version
+with:                                             # Parameters for the flow are defined after with
+  prefetch: 10                                    # Number of prefetched requests from the client
+  port_expose: $JINA_PORT                         # Port defined in environment variable
+  workspace: $JINA_WORKSPACE                      # Workspace folder
+pods:                                             # Now, we define the pods that are used
+  - name: image_loader                            # The first executor is an image loader that filters only image documents
+    uses: ImageReader                             # Type of the executor
+    py_modules: 'flows/executors.py'              # The python file where the executor is implemented
+    read_only: true                               # Executor does not modify files
+    needs: gateway                                # Executor is after the gateway, this means at the start of the flow
+  - name: image_encoder                           # After the images are read, compute their embedding in the encoder
+    uses: 'jinahub+docker://CLIPImageEncoder/v0.1'     # The type of the executor - here, we use a hub executor from the jinahub in the form of a docker container
+    volumes: $HOME/.cache/huggingface:/root/.cache/huggingface  # Mount a volume into the executor
+    timeout_ready: 600000                         # Set a timeout for the executor
+    read_only: true                               # Executor does not modify files
+    needs: image_loader                           # This executor is located after the image loader in the flow
+  - name: image_indexer                           # Executor that stores image embeddings
+    uses: 'jinahub://SimpleIndexer/old'           # Hub Executor - We use a SimpleIndexer here
+    uses_with:                                    # Define arguments for the SimpleIndexer
+      index_file_name: 'image_index'              # Folder path for this executor
+    needs: image_encoder                          # This executor is after the image encoder in the flow
+  - name: text_filter                             # Now, we define another path in the flow that is parallel in the execution
+    uses: TextFilter                              # The first executor is a filter that filters all text documents and ignores images now
+    py_modules: 'flows/executors.py'              # File where the TextFilter is implemented
+    needs: gateway                                # Start after the gateway, so at the beginning of the flow - this creates a second path in the flow
+  - name: text_encoder                            # Create the next executor that computes embeddings for the text documents
+    uses: 'jinahub+docker://CLIPTextEncoder/v0.1'      # Use a hub executor in docker
+    volumes: $HOME/.cache/huggingface:/root/.cache/huggingface  # Mount the models directory
+    timeout_ready: 600000                         # Set timeout
+    read_only: true                               # Executor does not modify files
+    needs: text_filter                            # Run this executor after the image filter
+  - name: text_indexer                            # Finally, store the indexed text documents with embeddings on disk
+    uses: 'jinahub://SimpleIndexer/old'           # Use SimpleIndexer from hub in docker again
+    uses_with:                                    # Define parameters for the text indexer
+      index_file_name: 'text_index'               # Folder name in the workspace
+    needs: text_encoder                           # Start after the text encoder executor is finished
+  - name: join_all                                # This is the last executor - it waits until both paths in the flow are finished (image and text path)
+    needs: [image_indexer, text_indexer]          # Wait for these two executors to finish - only then we can continue
