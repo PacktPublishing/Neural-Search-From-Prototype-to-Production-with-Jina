@@ -94,9 +94,9 @@ curl --request POST -d '{"parameters": {"top_k": 10}, "data": ["hello world"]}' 
 As an alternative to cURL, you can also launch the web interface in another terminal:
 ```bash
 cd static
-python -m http.server
+python -m http.server --bind localhost
 ```
-Now you can open `http://0.0.0.0:8000/` in your browser and you should see a web interface. See the next section to understand your results. 
+Now you can open `http://127.0.0.1:8000/` in your browser and you should see a web interface. See the next section to understand your results. 
 
 ## 📉 Using the search interface and understanding your results
 Let's begin by starting with a simple one-sentence query. For example, if you add the sentence 'I am very happy today; you should see a similar result. Each of these boxes you see on the right-hand side is a song in your dataset. Each highlighted sentence is a 'match.'  A match is a similar sentence, determined by how close two vectors are in embedding space.  If you don't understand the concept of embedding spaces, we suggest you check out this guide [here](https://towardsdatascience.com/neural-network-embeddings-explained-4d028e6f0526) and then return to this example after. 
