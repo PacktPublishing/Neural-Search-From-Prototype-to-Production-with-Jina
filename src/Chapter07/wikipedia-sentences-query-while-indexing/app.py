@@ -8,8 +8,8 @@ from typing import List, Dict
 
 import click
 from daemon.clients import JinaDClient
-from jina.logging.logger import JinaLogger
 from jina import __default_host__, Document, DocumentArray, Client
+from jina.logging.logger import JinaLogger
 
 os.environ['JINA_LOG_LEVEL'] = 'DEBUG'
 
@@ -104,9 +104,8 @@ def dump_and_roll_update(storage_flow_id: str, query_flow_id: str):
 
         # JinaD is used for ctrl requests on Flows
         logger.info(f'performing rolling update across replicas...')
-        jinad_client.flows.update(
+        jinad_client.flows.rolling_update(
             id=query_flow_id,
-            kind='rolling_update',
             pod_name='query_indexer',
             dump_path=current_dump_path,
         )

@@ -94,7 +94,7 @@ In this example, we use [JinaD]((https://docs.jina.ai/advanced/daemon/#remote-ma
            -v /tmp/jinad:/tmp/jinad \
            -p 8000:8000 \
            --name jinad \
-           -d jinaai/jina:2.1.0-daemon
+           -d jinaai/jina:2.6.2-daemon
    ```
 
 2. Run `python app.py -t flows`
