@@ -1,11 +1,12 @@
+import os
 from typing import Dict
 
 import numpy as np
 import torch
 from transformers import AutoModel, AutoTokenizer
 
-from jina import Executor, DocumentArray, requests
-from jina import DocumentArrayMemmap
+from jina import Executor, requests
+from docarray import DocumentArray
 
 
 class MyTransformer(Executor):
@@ -53,7 +54,7 @@ class MyTransformer(Executor):
                 self.model.resize_token_embeddings(len(self.tokenizer.vocab))
 
             input_tokens = self.tokenizer(
-                docs.get_attributes('content'),
+                docs[:, 'content'],
                 padding='longest',
                 truncation=True,
                 return_tensors='pt',
@@ -73,7 +74,14 @@ class MyIndexer(Executor):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._docs = DocumentArrayMemmap(self.workspace + '/indexer')
+        self.table_name = 'qabot_docs'
+        self._docs = DocumentArray(
+            storage='sqlite',
+            config={
+                'connection': os.path.join(self.workspace, 'indexer.db'),
+                'table_name': self.table_name,
+            },
+        )
 
     @requests(on='/index')
     def index(self, docs: 'DocumentArray', **kwargs):
