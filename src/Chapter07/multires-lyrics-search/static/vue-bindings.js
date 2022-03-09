@@ -107,16 +107,17 @@ const vm = new Vue({
                     item['isSelect'] = true;
                 }
                 if (item['isSelect']) {
-                    item.matches.forEach(function (r) {
-                        if (vm.topkDocsDict.has(r.parentId)) {
-                            let dist = r.scores['cosine'].value
+                    item.matches.forEach(function (match) {
+                        if (vm.topkDocsDict.has(match.parent_id)) {
+                            let dist = match.scores['cosine'].value
+                            console.log(dist);
                             if (dist < vm.distThreshold) {
                                 // console.log(item)
-                                vm.topkDocsDict.get(r.parentId)['hlchunk'].push({
-                                    'range': r.location,
+                                vm.topkDocsDict.get(match.parent_id)['hlchunk'].push({
+                                    'range': match.location,
                                     'idx': i,
                                     'dist': dist,
-                                    'range_str': r.location[0] + ',' + r.location[1]
+                                    'range_str': match.location[0] + ',' + match.location[1]
                                 });
                             }
                             if (dist < vm.sliderOptions.min) {
@@ -127,7 +128,7 @@ const vm = new Vue({
                             }
 
                         } else {
-                            console.error(r.id);
+                            console.error(match.id);
                         }
                     });
                 }
@@ -164,7 +165,7 @@ const vm = new Vue({
                 cache: false,
                 data: JSON.stringify({
                     "parameters": {"top_k": this.top_k},
-                    "data": [this.searchQuery]
+                    "data": [{"text": this.searchQuery}]
                 }),
                 error: function (jqXHR, textStatus, errorThrown) {
                     console.log(jqXHR);
@@ -172,9 +173,9 @@ const vm = new Vue({
                     console.log(errorThrown);
                 },
                 success: function (data) {
-                    vm.topkDocs = data.data.docs[0].matches;
+                    vm.topkDocs = data.data[0].matches;
                     console.log('Number parents: ' + vm.topkDocs.length);
-                    vm.queryChunks = data.data.docs[0].chunks;
+                    vm.queryChunks = data.data[0].chunks;
                     console.log('Number chunks: ' + vm.queryChunks.length);
                     vm.refreshAllCards();
                     console.log('Success');
