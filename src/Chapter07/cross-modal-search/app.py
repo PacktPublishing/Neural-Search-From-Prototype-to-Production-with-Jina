@@ -1,13 +1,14 @@
 __copyright__ = "Copyright (c) 2021 Jina AI Limited. All rights reserved."
 __license__ = "Apache-2.0"
 
+import logging
 import os
+import shutil
 import sys
 
 import click
-from jina import Flow, Document, DocumentArray
-import logging
 import matplotlib.pyplot as plt
+from jina import Flow, Document
 
 from dataset import input_index_data
 
@@ -27,7 +28,7 @@ def config():
 
 
 def index_restful():
-    flow = Flow().load_config('flows/flow-index.yml', override_with={'protocol': 'http'})
+    flow = Flow.load_config('flows/flow-index.yml', override_with={'protocol': 'http'})
     with flow:
         flow.block()
 
@@ -49,24 +50,26 @@ def check_query_result(text_doc, image_doc, img_uri):
 
         for i, m in enumerate(text_doc.matches):
             axarr[i].title.set_text(f'score={m.scores["cosine"].value:.4f}')
-            axarr[i].imshow(m.blob)
+            axarr[i].imshow(m.tensor)
             axarr[i].axes.xaxis.set_visible(False)
             axarr[i].axes.yaxis.set_visible(False)
         plt.suptitle(f"Best matches for '{text_doc.text}'")
         plt.show()
+        plt.savefig("image_output.png")
 
 
 def index(data_set, num_docs, request_size):
-    flow = Flow().load_config('flows/flow-index.yml')
+    flow = Flow.load_config('flows/flow-index.yml')
     with flow:
+        inputs = list(input_index_data(num_docs, request_size, data_set))
         flow.post(on='/index',
-                  inputs=input_index_data(num_docs, request_size, data_set),
-                  request_size=request_size,
-                  show_progress=True)
+                  inputs=inputs,
+                  show_progress=True,
+                  request_size=request_size)
 
 
 def query(query_image, query_text):
-    flow = Flow().load_config('flows/flow-query.yml')
+    flow = Flow.load_config('flows/flow-query.yml')
     with flow:
         img_uri = query_image
         text_doc = Document(text=query_text,
@@ -75,12 +78,11 @@ def query(query_image, query_text):
                              modality='image')
         import time
         start = time.time()
-        result_text = flow.post(on='/search', inputs=text_doc,
-                                return_results=True)
-        result_image = flow.post(on='/search', inputs=image_doc,
-                                 return_results=True)
+        result_text = flow.post(on='/search', inputs=text_doc)
+        result_image = flow.post(on='/search', inputs=image_doc)
         print(f'Request duration: {time.time() - start}')
-        check_query_result(result_text[0].docs[0], result_image[0].docs[0], img_uri)
+        # import epdb; epdb.st();
+        check_query_result(result_text[0], result_image[0], img_uri)
 
 
 
@@ -105,14 +107,8 @@ def main(task, num_docs, request_size, data_set, query_image, query_text):
     logger = logging.getLogger('cross-modal-search')
     if 'index' in task:
         if os.path.exists(workspace):
-            logger.error(
-                f'\n +------------------------------------------------------------------------------------+ \
-                    \n |                                   🤖🤖🤖                                           | \
-                    \n | The directory {workspace} already exists. Please remove it before indexing again.  | \
-                    \n |                                   🤖🤖🤖                                           | \
-                    \n +------------------------------------------------------------------------------------+'
-            )
-            sys.exit(1)
+            logger.warning(f'Removing {workspace} before re-indexing')
+            shutil.rmtree(workspace)
     if 'query' in task:
         if not os.path.exists(workspace):
             logger.error(f'The directory {workspace} does not exist. Please index first via `python app.py -t index`')

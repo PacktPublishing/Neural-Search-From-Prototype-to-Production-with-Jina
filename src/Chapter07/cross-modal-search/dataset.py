@@ -5,11 +5,13 @@ __license__ = "Apache-2.0"
 import os
 import json as jsonmod
 import hashlib
+import io
 
+import numpy as np
 import torch
 import torch.utils.data as data
 from jina import Document
-
+from PIL import Image
 
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -114,7 +116,7 @@ def input_index_data(num_docs=None, batch_size=8, dataset_type='f30k'):
             hashed = hashlib.sha1(image).hexdigest()
             document_img = Document()
             
-            document_img.buffer = image
+            document_img.tensor = np.array(Image.open(io.BytesIO(image)))
             document_img.modality = 'image'
             document_img.mime_type = 'image/jpeg'
             

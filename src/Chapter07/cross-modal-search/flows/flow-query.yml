@@ -4,40 +4,38 @@ with:
   prefetch: 10
   port_expose: $JINA_PORT
   workspace: $JINA_WORKSPACE
-pods:
+executors:
   - name: loader                                  # Again, we start two paths in the flow - here we start the image path
     uses: ImageReader
     py_modules: 'flows/executors.py'
     read_only: true
     needs: [gateway]
   - name: image_encoder                           # Now, encode the images and compute the embeddings
-    uses: 'jinahub+docker://CLIPImageEncoder/v0.1'
+    uses: 'jinahub+docker://CLIPImageEncoder/v0.4'
     volumes: $HOME/.cache/huggingface:/root/.cache/huggingface
     timeout_ready: 600000
     read_only: true
     needs: loader
   - name: text_indexer                            # Now, we use the text indexer in the image path - This is how we achieve the cross-modality here
-    uses: 'jinahub://SimpleIndexer/old'           # The text indexer has indexed all text documents and stored them on disk.
-    uses_with:                                    # Then we return the closest matches as results
-     index_file_name: 'text_index'
+    uses: 'jinahub://SimpleIndexer/v0.15'         # The text indexer has indexed all text documents and stored them on disk.
+    uses_metas:                                   # Define parameters for the text indexer
+      workspace: $JINA_WORKSPACE/text_index      # Folder name in the workspace
     needs: image_encoder
-    force: True
     read_only: true
   - name: text_filter                             # Here, the text path starts
     uses: TextFilter
     py_modules: 'flows/executors.py'
     needs: [gateway]
   - name: text_encoder                            # Compute the embedding of the search text
-    uses: 'jinahub+docker://CLIPTextEncoder/v0.1'
+    uses: 'jinahub+docker://CLIPTextEncoder/v0.2'
     volumes: $HOME/.cache/huggingface:/root/.cache/huggingface
     timeout_ready: 600000
     read_only: true
     needs: text_filter
   - name: image_indexer                           # Now, we use the image indexer in the text path - this is again how we get cross-modality
-    uses: 'jinahub://SimpleIndexer/old'           # The image indexer has indexed all images and their embeddings
-    uses_with:
-      index_file_name: 'image_index'
-    force: True
+    uses: 'jinahub://SimpleIndexer/v0.15'         # The image indexer has indexed all images and their embeddings
+    uses_metas:                                   # Define arguments for the SimpleIndexer
+      workspace: $JINA_WORKSPACE/image_index
     read_only: true
     needs: text_encoder
   - name: join_all                                # Wait for both paths to finish and join the results
