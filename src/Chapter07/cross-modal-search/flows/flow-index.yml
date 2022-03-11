@@ -6,7 +6,7 @@ with:                                             # Parameters for the flow are 
 executors:                                             # Now, we define the pods that are used
   - name: image_loader                            # The first executor is an image loader that filters only image documents
     uses: ImageReader                             # Type of the executor
-    py_modules: 'flows/executors.py'              # The python file where the executor is implemented
+    py_modules: 'flows/executorrs.py'              # The python file where the executor is implemented
     read_only: true                               # Executor does not modify files
     needs: gateway                                # Executor is after the gateway, this means at the start of the flow
   - name: image_encoder                           # After the images are read, compute their embedding in the encoder

@@ -68,7 +68,7 @@ git clone https://github.com/jina-ai/examples
 cd examples/wikipedia-sentences-query-while-indexing
 ```
 
-Let's install `jina` and the other required libraries. For further information on installing jina check out [our documentation](https://docs.jina.ai/get-started/install/).
+Let's install `jina` and the other required libraries. For further information on installing jina check out [our documentation](https://docs.jina.ai).
 
 ```sh
 pip install -r requirements.txt
@@ -94,7 +94,7 @@ In this example, we use [JinaD]((https://docs.jina.ai/advanced/daemon/#remote-ma
            -v /tmp/jinad:/tmp/jinad \
            -p 8000:8000 \
            --name jinad \
-           -d jinaai/jina:2.6.2-daemon
+           -d jinaai/jina:3.1.1-daemon
    ```
 
 2. Run `python app.py -t flows`

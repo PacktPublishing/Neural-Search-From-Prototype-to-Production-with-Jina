@@ -47,7 +47,7 @@ def query_restful():
         query_doc = Document()
         query_doc.text = text
         response = query_docs(query_doc)
-        matches = response[0].data.docs[0].matches
+        matches = response[0].matches
         len_matches = len(matches)
         logger.info(f'Ta-Dah🔮, {len_matches} matches we found for: "{text}" :')
 
@@ -96,18 +96,15 @@ def dump_and_roll_update(storage_flow_id: str, query_flow_id: str):
         current_dump_path = os.path.join(DUMP_PATH, str(round))
 
         logger.info(f'dumping...')
-        Client(host=HOST, port=STORAGE_REST_PORT, protocol='http').post(
-            on='/dump',
-            parameters={'shards': SHARDS, 'dump_path': current_dump_path},
-            target_peapod='storage_indexer',
-        )
+        Client(host=HOST, port=STORAGE_REST_PORT, protocol='http').post(on='/dump', parameters={'shards': SHARDS, 'dump_path': current_dump_path},target_executor='storage_indexer')
 
         # JinaD is used for ctrl requests on Flows
         logger.info(f'performing rolling update across replicas...')
-        jinad_client.flows.rolling_update(
+        jinad_client.deployments.rolling_update(
+            # TODO flow is removed here
             id=query_flow_id,
-            pod_name='query_indexer',
-            dump_path=current_dump_path,
+            deployment_name='query_indexer',
+            uses_with={"dump_path": current_dump_path},
         )
         logger.info(f'rolling update done. sleeping for {DUMP_RELOAD_INTERVAL}secs...')
         time.sleep(DUMP_RELOAD_INTERVAL)
