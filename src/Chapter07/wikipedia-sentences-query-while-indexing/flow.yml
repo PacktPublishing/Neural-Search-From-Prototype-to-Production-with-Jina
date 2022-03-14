@@ -1,0 +1,17 @@
+jtype: Flow                                       # we define the Flow used for storing (CRUD operations)
+version: '1'
+with:
+  protocol: http                                  # we want to use the REST HTTP API
+  port_expose: 9000                               # the port to listen on. This is referenced in `app.py`
+executors:                                        # the components in this Flow
+  - name: storage_encoder                         # the name. This is the Encoder (transforms the text into vectors)
+    uses: jinahub+docker://FlairTextEncoder/test-3.0  # we use a pre-built Executor from Jina Hub
+    timeout_ready: -1                             # disable timing out on startup (downloading image can take some time)
+  - name: indexer                                 # the name. This stores the data in a PSQL db
+    uses: jinahub://HNSWPostgresIndexer/v0.8      # again, we use a docker image
+    install_requirements: True                    # install the required libraries
+    uses_with:                                    # passing arguments to the Executor class
+      sync_interval: 10                           # the seconds between automatic syncing of db into HNSW index
+      dim: 100                                    # we need to predefine the HNSW index dimensionality
+    timeout_ready: -1                             # disable startup timeout
+
