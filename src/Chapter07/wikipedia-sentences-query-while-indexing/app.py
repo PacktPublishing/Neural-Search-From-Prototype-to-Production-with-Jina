@@ -3,31 +3,18 @@ __license__ = "Apache-2.0"
 
 import os
 import time
-import traceback
-from typing import List, Dict
 
 import click
-from daemon.clients import JinaDClient
-from jina import __default_host__, Document, DocumentArray, Client
+from jina import Document, DocumentArray, Client, Flow
 from jina.logging.logger import JinaLogger
 
 os.environ['JINA_LOG_LEVEL'] = 'DEBUG'
 
-HOST = __default_host__  # change this if you are using remote jinad
-JINAD_PORT = 8000  # change this if you start jinad on a different port
-DUMP_PATH = '/jinad_workspace/dump'  # the path where to dump
-SHARDS = 1  # change this if you change pods/query_indexer.yml
-DUMP_RELOAD_INTERVAL = 10  # time between dump - rolling update calls
 DATA_FILE = 'data/toy.txt'  # change this if you get the full data
 DOCS_PER_ROUND = 5  # nr of documents to index in each round
-STORAGE_FLOW_YAML_FILE = 'storage.yml'  # indexing Flow yaml name
-QUERY_FLOW_YAML_FILE = 'query.yml'  # querying Flow yaml name
-STORAGE_REST_PORT = 9000  # REST port of storage Flow, defined in flows/storage.yml
-QUERY_REST_PORT = 9001  # REST port of Query Flow, defined in flows/query.yml
+QUERY_REST_PORT = 9000  # REST port of Flow, defined in flow.yml
 
-logger = JinaLogger('jina')
-cur_dir = os.path.dirname(os.path.abspath(__file__))
-jinad_client = JinaDClient(host=HOST, port=JINAD_PORT, timeout=10 * 60)
+logger = JinaLogger('app')
 
 
 def docarray_from_file(filename):
@@ -47,7 +34,7 @@ def query_restful():
         query_doc = Document()
         query_doc.text = text
         response = query_docs(query_doc)
-        matches = response[0].data.docs[0].matches
+        matches = response[0].matches
         len_matches = len(matches)
         logger.info(f'Ta-Dah🔮, {len_matches} matches we found for: "{text}" :')
 
@@ -58,92 +45,41 @@ def query_restful():
             logger.info(f'> {idx:>2d}({score:.2f}). {match.text}')
 
 
-def index_docs(docs: List[Dict], round: int):
-    docs_to_send = docs[round * DOCS_PER_ROUND : (round + 1) * DOCS_PER_ROUND]
-    logger.info(f'Indexing {len(docs_to_send)} document(s)...')
-    Client(host=HOST, port=STORAGE_REST_PORT, protocol='http').index(inputs=docs_to_send)
-
-
 def query_docs(docs: Document):
     logger.info(f'Searching document {docs}...')
-    return Client(host=HOST, port=QUERY_REST_PORT, protocol='http').search(inputs=docs, return_results=True)
+    return Client(host='localhost', port=QUERY_REST_PORT, protocol='http').search(
+        inputs=docs, return_results=True)
 
 
-def create_flows():
-    workspace_id = jinad_client.workspaces.create(paths=[os.path.join(cur_dir, 'flows')])
-    jinad_workspace = jinad_client.workspaces.get(workspace_id)['metadata']['workdir']
-
-    logger.info('Creating storage Flow...')
-    storage_flow_id = jinad_client.flows.create(
-        workspace_id=workspace_id, filename=STORAGE_FLOW_YAML_FILE, envs={'JINAD_WORKSPACE': jinad_workspace}
-    )
-    logger.info(f'Created successfully. Flow ID: {storage_flow_id}')
-    logger.info('Creating Query Flow...')
-    query_flow_id = jinad_client.flows.create(
-        workspace_id=workspace_id, filename=QUERY_FLOW_YAML_FILE, envs={'JINAD_WORKSPACE': jinad_workspace}
-    )
-    logger.info(f'Created successfully. Flow ID: {query_flow_id}')
-    return storage_flow_id, query_flow_id, workspace_id
-
-
-def dump_and_roll_update(storage_flow_id: str, query_flow_id: str):
+def start_flow_loop() -> None:
     docs = docarray_from_file(DATA_FILE)
-    logger.info(f'starting dump and rolling-update process')
-    round = 0
-    while True:
-        logger.info(f'round {round}:')
-        index_docs(docs, round)
-        current_dump_path = os.path.join(DUMP_PATH, str(round))
-
-        logger.info(f'dumping...')
-        Client(host=HOST, port=STORAGE_REST_PORT, protocol='http').post(
-            on='/dump',
-            parameters={'shards': SHARDS, 'dump_path': current_dump_path},
-            target_peapod='storage_indexer',
-        )
-
-        # JinaD is used for ctrl requests on Flows
-        logger.info(f'performing rolling update across replicas...')
-        jinad_client.flows.rolling_update(
-            id=query_flow_id,
-            pod_name='query_indexer',
-            dump_path=current_dump_path,
-        )
-        logger.info(f'rolling update done. sleeping for {DUMP_RELOAD_INTERVAL}secs...')
-        time.sleep(DUMP_RELOAD_INTERVAL)
-        round += 1
-
-
-def cleanup(storage_flow_id, query_flow_id, workspace_id):
-    jinad_client.flows.delete(storage_flow_id)
-    jinad_client.flows.delete(query_flow_id)
-    jinad_client.workspaces.delete(workspace_id)
-
+    f = Flow.load_config('flow.yml')
+    logger.info(f'starting Flow')
+    f.plot('flow.png')
+    return
+    with f:
+        for round, docs_batch in enumerate(docs.batch(DOCS_PER_ROUND)):
+            logger.info(f'Round {round} of indexing...')
+            logger.info(f'Indexing {len(docs_batch)} docs')
+            f.index(docs_batch)
+            logger.info(f'Waiting 10 seconds before next round.')
+            time.sleep(10)
+        logger.info(f'No more docs to index. Serving Flow until Ctrl+C...')
+        f.block()
 
 @click.command()
 @click.option(
     '--task',
     '-t',
-    type=click.Choice(['flows', 'client'], case_sensitive=False),
+    type=click.Choice(['flow', 'client'], case_sensitive=False),
 )
 def main(task: str):
     """main entrypoint for this example"""
-    if task == 'flows':
-        # start a Index Flow, dump the data from the Index Flow, and load it into the Query Flow.
+    if task == 'flow':
         try:
-            storage_flow_id, query_flow_id, workspace_id = create_flows()
-            # starting a loop that
-            # - indexes some data in batches
-            # - sends request to storage Flow in JinaD to dump its data to a location
-            # - send request to Query Flow in JinaD to perform rolling update across its replicas,
-            # which reads the new data in the dump
-            dump_and_roll_update(storage_flow_id, query_flow_id)
-        except (Exception, KeyboardInterrupt) as e:
-            if e:
-                logger.warning(f'Caught: {e}. Original stacktrace following:')
-                logger.error(traceback.format_exc())
-            logger.info('Shutting down and cleaning Flows in JinaD...')
-            cleanup(storage_flow_id, query_flow_id, workspace_id)
+            start_flow_loop()
+        except Exception as e:
+            logger.info(f'Caught {e}. Shutting down...')
 
     elif task == 'client':
         query_restful()
