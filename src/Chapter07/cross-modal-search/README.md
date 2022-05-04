@@ -43,11 +43,11 @@ These instructions explain how to build the example yourself and deploy it with 
 
 ### 👾 Step 1. Clone the repo and install Jina
 
-Begin by cloning the repo, so you can get the required files and datasets. (If you already have the examples repository on your machine make sure to fetch the most recent version)
+Begin by cloning the repo, so you can get the required files and datasets.
 
 ```sh
-git clone https://github.com/jina-ai/examples
-cd examples/cross-modal-search
+git clone https://github.com/PacktPublishing/JINA-Framework-Full-Stack-Neural-Search-in-Production
+cd https://github.com/PacktPublishing/JINA-Framework-Full-Stack-Neural-Search-in-Production/src/Chapter07/cross-modal-search
 ````
 In your terminal, you should now be located in the *cross-modal-search* folder. Let's install Jina and the other required Python libraries. For further information on installing Jina check out [our documentation](https://docs.jina.ai/chapters/core/setup/).
 
@@ -62,11 +62,9 @@ To index the toy dataset, run
 ```bash
 python app.py -t index
 ```
-If you see the following output, it means your data has been correctly indexed.
+You will see a lot of messages. Then you will see a progress bar indicating the indexing progress. At some point this will switch to "DONE". The process will then close.
 
-```
-Flow@5162[S]:flow is closed and all resources are released, current build level is 0
-```
+#### Indexing the full dataset
 
 We recommend you come back to this step later and index the full flickr 8k dataset for better results. 
 To index the [full dataset](https://www.kaggle.com/adityajn105/flickr8k) (8000 images) follow these steps:
@@ -123,9 +121,20 @@ python app.py -t query_restful
 ```
 
 You should open another terminal window and paste the following command.
+
+For text queries:
+
 ```sh
-curl --request POST -d '{"parameters":{"top_k": 5}, "data": ["a black dog and a spotted dog are fighting"]}' -H 'Content-Type: application/json' 'http://localhost:45678/search'
+curl --request POST -d '{"parameters":{"top_k": 5}, "data": [{"text":"a black dog and a spotted dog are fighting", "modality":"text"}]}' -H 'Content-Type: application/json' 'http://localhost:45678/search'
 ```
+
+For image queries:
+
+```sh
+curl --request POST -d '{"parameters":{"top_k": 5}, "data": [{"uri":"https://mir-s3-cdn-cf.behance.net/user/115/0a6dcc6039821.56f7fed4912a8.png", "modality":"image"}]}' -H 'Content-Type: application/json' 'http://localhost:45678/search'
+```
+
+NOTE: The URI needs to be accessible by the Docker container. It's safer to provide an HTTP(s) location, since that will be available.
 
 Once you run this command, you should see a JSON output returned to you. This contains the five most semantically similar images sentences to the text input you provided in the `data` parameter.
 Note, that the toy-data only contains two images.
