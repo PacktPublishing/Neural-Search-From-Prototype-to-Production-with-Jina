@@ -6,11 +6,13 @@ __version__ = '0.0.1'
 import os
 import sys
 import click
+import warnings
 
 from jina import Flow, Document
 from helper import input_generator
 from jina.logging.predefined import default_logger as logger
 
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 def config():
     cur_dir = os.path.dirname(os.path.abspath(__file__))

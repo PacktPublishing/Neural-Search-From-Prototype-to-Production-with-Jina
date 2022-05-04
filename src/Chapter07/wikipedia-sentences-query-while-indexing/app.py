@@ -3,11 +3,13 @@ __license__ = "Apache-2.0"
 
 import os
 import time
+import warnings
 
 import click
 from jina import Document, DocumentArray, Client, Flow
 from jina.logging.logger import JinaLogger
 
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 os.environ['JINA_LOG_LEVEL'] = 'DEBUG'
 
 DATA_FILE = 'data/toy.txt'  # change this if you get the full data

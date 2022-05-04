@@ -34,11 +34,11 @@ These instructions explain how to build the example yourself and deploy it with 
 
 ### 👾 Step 1. Clone the repo and install Jina
 
-Begin by cloning the repo so you can get the required files and datasets. If you already have the examples repository on your machine make sure to fetch the most recent version. 
+Begin by cloning the repo so you can get the required files and datasets.
 
 ```sh
-git clone https://github.com/jina-ai/examples
-cd examples/multires-lyrics-search
+git clone https://github.com/PacktPublishing/JINA-Framework-Full-Stack-Neural-Search-in-Production
+cd https://github.com/PacktPublishing/JINA-Framework-Full-Stack-Neural-Search-in-Production/src/Chapter07/multires-lyrics-search
 ```
 
 On your terminal,  you should now be located in the `multires-lyrics-search` folder. Let's install Jina and the other required Python libraries. For futher information on installing Jina check out our [documentation](https://docs.jina.ai/chapters/core/setup/).

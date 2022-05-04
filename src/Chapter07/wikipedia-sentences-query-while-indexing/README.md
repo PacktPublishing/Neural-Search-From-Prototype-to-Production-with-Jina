@@ -58,11 +58,11 @@ These instructions explain how to run the example yourself and deploy it with Py
 
 ### 👾 Step 1. Clone the repo and install Jina
 
-Begin by cloning the repo so you can get the required files and datasets. (If you already have the examples repository on your machine make sure to fetch the most recent version)
+Begin by cloning the repo so you can get the required files and datasets.
 
 ```sh
-git clone https://github.com/jina-ai/examples
-cd examples/wikipedia-sentences-query-while-indexing
+git clone https://github.com/PacktPublishing/JINA-Framework-Full-Stack-Neural-Search-in-Production
+cd https://github.com/PacktPublishing/JINA-Framework-Full-Stack-Neural-Search-in-Production/src/Chapter07/cross-modal-searchwikipedia-sentences-query-while-indexing
 ```
 
 Let's install `jina` and the other required libraries. For further information on installing jina check out [our documentation](https://docs.jina.ai/get-started/install/).
