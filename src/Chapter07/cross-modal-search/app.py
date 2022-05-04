@@ -5,7 +5,7 @@ import logging
 import os
 import shutil
 import sys
-
+import warnings
 import click
 import matplotlib.pyplot as plt
 from jina import Flow, Document
@@ -16,7 +16,7 @@ MAX_DOCS = int(os.environ.get("JINA_MAX_DOCS", 10000))
 cur_dir = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_QUERY_IMAGE = 'toy-data/images/1000268201_693b08cb0e.jpg'
 DEFAULT_QUERY_TEXT = 'a black dog and a spotted dog are fighting'
-
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 def config():
     os.environ.setdefault('JINA_WORKSPACE', os.path.join(cur_dir, 'workspace'))
