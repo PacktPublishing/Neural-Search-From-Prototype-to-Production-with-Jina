@@ -1,2 +1,2 @@
-# JINA-Framework-Full-Stack-Neural-Search-in-Production
-JINA Framework :Full-Stack Neural Search in Production, published by Packt
+# Neural Search - From Prototype to Production with Jina
+Neural Search - From Prototype to Production with Jina, published by Packt
