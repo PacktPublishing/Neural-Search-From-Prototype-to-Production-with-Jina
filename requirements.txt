@@ -1,2 +1,4 @@
 nltk==3.6.2
 pytest==6.2.5
+numpy==1.23.3
+spacy==3.4.1
