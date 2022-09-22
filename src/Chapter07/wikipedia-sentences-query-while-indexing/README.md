@@ -81,7 +81,9 @@ If you want to use the entire dataset, run `bash get_data.sh` and then modify th
 
 ### 🏃 Step 3. Running the Flow
 
-Run `python app.py -t flow`
+Run `docker run -e POSTGRES_PASSWORD=123456 -p 127.0.0.1:5432:5432/tcp postgres:13.2` to start the postgres server.
+
+Open another terminal and run `python app.py -t flow`
 
 This will create the Flow, and then repeatedly do the following (which can also be done in any other REST client), every 10 seconds:
 
@@ -95,7 +97,7 @@ Finally, in a second terminal, run `python app.py -t client`
 
 This will prompt you for a query, send the query to the Query Flow, and then show you the results.
 
-Since the Flows uses `http` protocol, you can query the REST API with whatever `Client` provided within jina or use `cURL`, `Postman` or [custom Swagger UI provided with jina](https://docs.jina.ai/fundamentals/practice-your-learning/#query-via-swaggerui) etc.
+Since the Flows uses `http` protocol, you can query the REST API with whatever `Client` provided within jina or use `cURL`, `Postman`.
 
 ## Flow diagrams
 
