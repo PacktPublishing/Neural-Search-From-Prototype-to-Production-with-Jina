@@ -8,7 +8,7 @@ executors:                                        # the components in this Flow
     uses: jinahub+docker://FlairTextEncoder/test-3.0  # we use a pre-built Executor from Jina Hub
     timeout_ready: -1                             # disable timing out on startup (downloading image can take some time)
   - name: indexer                                 # the name. This stores the data in a PSQL db
-    uses: jinahub://HNSWPostgresIndexer/v0.8      # again, we use a docker image
+    uses: jinahub://HNSWPostgresIndexer/v0.9      # again, we use a docker image
     install_requirements: True                    # install the required libraries
     uses_with:                                    # passing arguments to the Executor class
       sync_interval: 10                           # the seconds between automatic syncing of db into HNSW index
