@@ -4,3 +4,4 @@ kaggle==1.5.12
 docker
 scipy==1.7.3
 protobuf==3.20.1
+docarray[common]==0.9.3
