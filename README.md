@@ -70,3 +70,7 @@ We also provide a PDF file that has color images of the screenshots/diagrams use
 
 **Susana Guzmán**
  is the product manager at Jina AI. She has a background in computer science and for several years was working at different firms as a software developer with a focus on computer vision, working with both C++ and Python. She has a big interest in open source, which was what led her to Jina, where she started as a software engineer for 1 year until she got a clear overview of the product, which made her make the switch from engineering to PM. In her spare time, she likes to cook food from different cuisines around the world, looking for her new favorite dish.
+### Download a free PDF
+
+ <i>If you have already purchased a print or Kindle version of this book, you can get a DRM-free PDF version at no cost.<br>Simply click on the link to claim your free PDF.</i>
+<p align="center"> <a href="https://packt.link/free-ebook/9781801816823">https://packt.link/free-ebook/9781801816823 </a> </p>
