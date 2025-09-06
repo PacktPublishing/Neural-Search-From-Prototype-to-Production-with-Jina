@@ -88,7 +88,7 @@ python app.py -t query
 ```
 Once the API is running, you can use cURL to query data:
 ```sh
-curl --request POST -d '{"parameters": {"top_k": 10}, "data": ["hello world"]}' -H 'Content-Type: application/json' 'http://0.0.0.0:45678/search'
+curl --request POST -d '{"parameters": {"top_k": 10}, "data": [{"text": "hello world"}]}' -H 'Content-Type: application/json' 'http://0.0.0.0:45678/search'
 
 ```
 As an alternative to cURL, you can also launch the web interface in another terminal:

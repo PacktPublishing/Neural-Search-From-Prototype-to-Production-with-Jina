@@ -41,7 +41,7 @@ def query_restful():
         logger.info(f'Ta-Dah🔮, {len_matches} matches we found for: "{text}" :')
 
         for idx, match in enumerate(matches):
-            score = match.scores['euclidean'].value
+            score = match.scores['cosine'].value
             if score < 0.0:
                 continue
             logger.info(f'> {idx:>2d}({score:.2f}). {match.text}')
@@ -58,7 +58,6 @@ def start_flow_loop() -> None:
     f = Flow.load_config('flow.yml')
     logger.info(f'starting Flow')
     f.plot('flow.png')
-    return
     with f:
         for round, docs_batch in enumerate(docs.batch(DOCS_PER_ROUND)):
             logger.info(f'Round {round} of indexing...')
