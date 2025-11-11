@@ -1,3 +1,5 @@
-jina[daemon]==2.6.2
 kaggle==1.5.12
-click==7.1.2
+protobuf==3.20.1
+docarray[common]==0.9.3
+jina[standard]==3.1.1
+click==8.0.1
