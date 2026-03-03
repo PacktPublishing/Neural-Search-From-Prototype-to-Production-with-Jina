@@ -12,7 +12,7 @@ from jina import Flow, Document
 from helper import input_generator
 from jina.logging.predefined import default_logger as logger
 
-warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.filterwarnings('ignore', category=DeprecationWarning)
 
 def config():
     cur_dir = os.path.dirname(os.path.abspath(__file__))
@@ -72,7 +72,7 @@ def query_text():
 @click.option('--num_docs', '-n', default=10000)
 def main(task, num_docs):
     config()
-    workspace = os.environ["JINA_WORKSPACE"]
+    workspace = os.environ['JINA_WORKSPACE']
     if task == 'index':
         if os.path.exists(workspace):
             logger.error(f'\n +---------------------------------------------------------------------------------+ \
